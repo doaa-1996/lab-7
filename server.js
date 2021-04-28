@@ -8,11 +8,10 @@ const pg = require('pg');
 const server = express();
 const superagent = require('superagent');
 const PORT = process.env.PORT || 2000;
-const client = new pg.Client(process.env.DATABASE_URL);
-// const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+// const client = new pg.Client(process.env.DATABASE_URL);
+const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 server.use(cors());
 
-////////////////////////////////////////////////////////////////////
 
 server.get('/', handledRouter);
 server.get('/location', handledLocation);
@@ -22,7 +21,6 @@ server.get('/weather', handledWeather);
 server.get('/Parks', handledParks);
 server.get('*', handledError);
 
-////////////////////////function/////////////////////
 
 
 function handledRouter(req, res) {
@@ -39,9 +37,9 @@ function handledLocation(req, res) {
         .then(getData => {
             let gData = getData.body;
             const newLocationData = new Location(cityNameData, gData);
-            let SQL = 'SELECT * FROM locations WHERE search_query=$1;';//creadt amjad
+            let SQL = 'SELECT * FROM locations WHERE search_query=$1;';
             let savaData = [cityNameData];
-            client.query(SQL, savaData).then(result => { /*the secenod value always array =>savadata*/
+            client.query(SQL, savaData).then(result => {
                 if (result.rowCount) {
                     res.send(result.rows[0]);
                 }
@@ -84,13 +82,13 @@ function handledMovies(req, res) {
 
     superagent.get(moviesURl)
         .then(getData => {
-            // console.log(getData.body);
+
             let newArr = getData.body.results.map(element => {
-                // console.log(element);
+
                 return new Movies(element);
             });
             res.send(newArr);
-            // console.log(newArr);
+
         }
         );
 }
@@ -109,11 +107,9 @@ function handledYelp(req, res) {
         .then(getData => {
             console.log(getData.body);
             let newArr = getData.body.businesses.map(element => {
-                // console.log(element);
                 return new Yelp(element);
             });
             res.send(newArr);
-            // console.log(newArr);
         }
         );
     page++;
@@ -147,7 +143,6 @@ function handledParks(req, res) {
     let parkURL = `https://developer.nps.gov/api/v1/parks?q=${cityName}&limit=10&api_key=${key}`;
     superagent.get(parkURL)
         .then(getData => {
-            // console.log(getData);
             let newArr = getData.body.data.map(element => {
                 return new Park(element);
             });
@@ -167,7 +162,6 @@ function handledError(req, res) {
 }
 
 
-/////////////////////constructors/////////////////
 
 
 function Location(cityName, getData) {
@@ -212,7 +206,6 @@ function Park(getData) {
 }
 
 
-////////////////////listen////////////////////////////
 
 client.connect()
     .then(() => {
